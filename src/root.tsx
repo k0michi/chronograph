@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
-const ratio = window.devicePixelRatio ?? 1;
+function getDevicePixelRatio() {
+  return window.devicePixelRatio ?? 1;
+}
 
 export default function Root() {
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -8,6 +10,7 @@ export default function Root() {
   const [current, setCurrent] = useState<number>(Date.now());
   const handler = useRef<number>();
   const [range, setRange] = useState<TimeRange>(TimeRange.Day);
+  const [ratio, setRatio] = useState<number>(getDevicePixelRatio());
 
   function stop() {
     window.cancelAnimationFrame(handler.current!);
@@ -16,10 +19,15 @@ export default function Root() {
   function tick() {
     const canvasElem = canvas.current!;
     const ctx = canvasElem.getContext('2d')!;
+
+    if (getDevicePixelRatio() != ratio) {
+      setRatio(getDevicePixelRatio());
+    }
+
     const now = Date.now();
     setCurrent(now);
     ctx.clearRect(0, 0, canvasElem.width, canvasElem.height);
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1 * ratio;
 
     const beginningD = new Date();
 
@@ -113,7 +121,7 @@ export default function Root() {
   useEffect(() => {
     stop();
     handler.current = window.requestAnimationFrame(tick);
-  }, [laps, range]);
+  }, [laps, range, ratio]);
 
   useEffect(() => {
     const sLaps = localStorage.getItem('laps');
